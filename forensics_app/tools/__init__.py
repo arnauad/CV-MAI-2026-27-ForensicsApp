@@ -1,7 +1,7 @@
 """Register course functionality here so it appears in the sidebar."""
 
 from .channel_split import ChannelSplitTool
-from .canny import CannyTool
+from .canny import CannyTool, EdgeVisualizationTool
 from .channel_swap import ChannelSwapTool
 from .contrast_stretch import ContrastStretchTool
 from .convolution import ConvolutionTool
@@ -28,6 +28,7 @@ def build_tool_registry() -> ToolRegistry:
             MedianTool(),
             SobelTool(),
             CannyTool(),
+            EdgeVisualizationTool(),
         ]
     )
 
