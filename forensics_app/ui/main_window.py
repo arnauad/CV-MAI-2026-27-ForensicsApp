@@ -42,8 +42,8 @@ class MainWindow:
         if "clam" in style.theme_names():
             style.theme_use("clam")
         style.configure("Sidebar.TFrame", background="#eef1f5")
-        style.configure("Category.TLabel", background="#eef1f5", font=("TkDefaultFont", 10, "bold"))
-        style.configure("Tool.TButton", anchor="w", padding=(10, 7))
+        style.configure("Category.TLabel", background="#eef1f5", font=("TkDefaultFont", 9, "bold"))
+        style.configure("Tool.TButton", anchor="w", padding=(8, 3), font=("TkDefaultFont", 9))
         style.configure("Title.TLabel", font=("TkDefaultFont", 16, "bold"))
 
     def _build_menu(self) -> None:
@@ -88,10 +88,10 @@ class MainWindow:
         sidebar.pack_propagate(False)
         body.add(sidebar, weight=0)
         ttk.Label(sidebar, text="Forensics tools", style="Title.TLabel", background="#eef1f5").pack(
-            anchor="w", pady=(0, 12)
+            anchor="w", pady=(0, 10)
         )
         for category, tools in self.registry.categories():
-            ttk.Label(sidebar, text=category, style="Category.TLabel").pack(anchor="w", pady=(9, 4))
+            ttk.Label(sidebar, text=category, style="Category.TLabel").pack(anchor="w", pady=(5, 2))
             for tool in tools:
                 button = ttk.Button(
                     sidebar,
@@ -99,7 +99,7 @@ class MainWindow:
                     style="Tool.TButton",
                     command=lambda selected=tool: self.run_tool(selected),
                 )
-                button.pack(fill="x", pady=2)
+                button.pack(fill="x", pady=1)
                 button.bind("<Enter>", lambda _event, selected=tool: self.status.set(selected.description))
                 button.bind("<Leave>", lambda _event: self.status.set("Ready."))
 

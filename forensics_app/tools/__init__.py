@@ -6,7 +6,7 @@ from .channel_swap import ChannelSwapTool
 from .contrast_stretch import ContrastStretchTool
 from .convolution import ConvolutionTool
 from .grayscale import GrayscaleTool
-from .filters import GaussianTool, MedianTool, SobelTool
+from .filters import GaussianTool, MedianTool, SobelTool, SharpenTool
 from .histogram import HistogramTool
 from .image_info import ImageInfoTool
 from .masking import MaskingTool
@@ -29,6 +29,7 @@ def build_tool_registry() -> ToolRegistry:
             SobelTool(),
             CannyTool(),
             EdgeVisualizationTool(),
+            SharpenTool(),
         ]
     )
 

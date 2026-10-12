@@ -60,3 +60,26 @@ class SobelTool(ForensicsTool):
             message="Applied Sobel edge filtering.",
             details={"Operation": "Sobel filter"},
         )
+
+
+class SharpenTool(ForensicsTool):
+    tool_id = "sharpen"
+    title = "Sharpen"
+    category = "Starter tools"
+    description = "Sharpen the image via unsharp masking."
+
+    def run(self, parent, document: ImageDocument) -> ToolResult | None:
+        assert document.current is not None
+        sigma = simpledialog.askfloat("Sharpen", "Sigma:", initialvalue=2, minvalue=0, parent=parent)
+        if sigma is None:
+            return None
+        amount = simpledialog.askfloat("Sharpen", "Amount:", initialvalue=1.5, minvalue=0, parent=parent)
+        if amount is None:
+            return None
+        pixels = np.asarray(document.current.convert("L"))
+        output = filters.unsharp_mask(pixels, radius=sigma, amount=amount)
+        return ToolResult(
+            image=Image.fromarray((output * 255).round().astype(np.uint8)),
+            message="Applied unsharp masking.",
+            details={"Operation": "Sharpen", "Sigma": sigma, "Amount": amount},
+        )
