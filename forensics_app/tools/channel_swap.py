@@ -14,7 +14,7 @@ from .base import ForensicsTool, ToolResult
 class ChannelSwapTool(ForensicsTool):
     tool_id = "channel_swap"
     title = "Channel swap"
-    category = "Starter tools"
+    category = "Lab 2"
     description = "Swap the red and blue channels (RGB -> BGR)."
 
     def run(self, parent: tk.Misc, document: ImageDocument) -> ToolResult:

@@ -12,7 +12,7 @@ from .base import ForensicsTool, ToolResult
 class ConvolutionTool(ForensicsTool):
     tool_id = "convolution"
     title = "Convolution"
-    category = "Starter tools"
+    category = "Lab 3"
     description = "Apply horizontal, vertical or box convolution."
 
     def run(self, parent, document: ImageDocument) -> ToolResult | None:

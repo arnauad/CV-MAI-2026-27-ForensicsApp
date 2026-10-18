@@ -15,7 +15,7 @@ from .base import ForensicsTool, ToolResult
 class ContrastStretchTool(ForensicsTool):
     tool_id = "contrast_stretch"
     title = "Contrast stretching"
-    category = "Starter tools"
+    category = "Lab 2"
     description = "Stretch the 2nd-98th percentile intensity range to the full 0-255 range."
 
     def run(self, parent: tk.Misc, document: ImageDocument) -> ToolResult:

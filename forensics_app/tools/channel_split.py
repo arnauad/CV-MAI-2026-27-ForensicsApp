@@ -14,7 +14,7 @@ from .base import ForensicsTool, ToolResult
 class ChannelSplitTool(ForensicsTool):
     tool_id = "channel_split"
     title = "Channel split"
-    category = "Starter tools"
+    category = "Lab 2"
     description = "Show the red, green and blue channels of the image side by side."
 
     def run(self, parent: tk.Misc, document: ImageDocument) -> ToolResult:

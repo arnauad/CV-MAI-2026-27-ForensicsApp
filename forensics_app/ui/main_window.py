@@ -90,11 +90,21 @@ class MainWindow:
         ttk.Label(sidebar, text="Forensics tools", style="Title.TLabel", background="#eef1f5").pack(
             anchor="w", pady=(0, 10)
         )
+        lab_buttons = ttk.Frame(sidebar, style="Sidebar.TFrame")
+        lab_buttons.pack(fill="x")
+        self.lab_tools = ttk.Frame(sidebar, style="Sidebar.TFrame")
+        self.lab_tools.pack(fill="x", pady=(8, 0))
+        self._lab_frames: dict[str, ttk.Frame] = {}
+
         for category, tools in self.registry.categories():
-            ttk.Label(sidebar, text=category, style="Category.TLabel").pack(anchor="w", pady=(5, 2))
+            ttk.Button(
+                lab_buttons, text=category, command=lambda selected=category: self._show_lab(selected)
+            ).pack(fill="x", pady=1)
+
+            frame = ttk.Frame(self.lab_tools, style="Sidebar.TFrame")
             for tool in tools:
                 button = ttk.Button(
-                    sidebar,
+                    frame,
                     text=tool.title,
                     style="Tool.TButton",
                     command=lambda selected=tool: self.run_tool(selected),
@@ -102,6 +112,9 @@ class MainWindow:
                 button.pack(fill="x", pady=1)
                 button.bind("<Enter>", lambda _event, selected=tool: self.status.set(selected.description))
                 button.bind("<Leave>", lambda _event: self.status.set("Ready."))
+            self._lab_frames[category] = frame
+
+        self._show_lab(self.registry.categories()[0][0])
 
         self.image_view = ImageView(body)
         body.add(self.image_view, weight=1)
@@ -118,6 +131,10 @@ class MainWindow:
         self.results.pack(fill="both", expand=True)
 
         ttk.Label(container, textvariable=self.status, anchor="w", padding=(10, 6), relief="sunken").pack(fill="x")
+
+    def _show_lab(self, category: str) -> None:
+        for name, frame in self._lab_frames.items():
+            frame.pack(fill="x") if name == category else frame.pack_forget()
 
     def _bind_shortcuts(self) -> None:
         self.root.bind_all("<Control-o>", lambda _event: self.open_image())

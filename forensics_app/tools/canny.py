@@ -11,7 +11,7 @@ from .base import ForensicsTool, ToolResult
 class CannyTool(ForensicsTool):
     tool_id = "canny"
     title = "Canny edge detection"
-    category = "Starter tools"
+    category = "Lab 3"
     description = "Detect edges with an adjustable Canny sigma."
 
     def run(self, parent, document: ImageDocument) -> ToolResult | None:
@@ -31,7 +31,7 @@ class CannyTool(ForensicsTool):
 class EdgeVisualizationTool(ForensicsTool):
     tool_id = "edge_visualization"
     title = "Edge visualization"
-    category = "Starter tools"
+    category = "Lab 3"
     description = "Draw detected edges in red over the image."
 
     def run(self, parent, document: ImageDocument) -> ToolResult | None:

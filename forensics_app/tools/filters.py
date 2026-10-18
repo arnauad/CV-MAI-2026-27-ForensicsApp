@@ -11,7 +11,7 @@ from .base import ForensicsTool, ToolResult
 class GaussianTool(ForensicsTool):
     tool_id = "gaussian"
     title = "Gaussian filter"
-    category = "Starter tools"
+    category = "Lab 3"
     description = "Blur the image with an adjustable Gaussian sigma."
 
     def run(self, parent, document: ImageDocument) -> ToolResult | None:
@@ -31,7 +31,7 @@ class GaussianTool(ForensicsTool):
 class MedianTool(ForensicsTool):
     tool_id = "median"
     title = "Median filter"
-    category = "Starter tools"
+    category = "Lab 3"
     description = "Reduce isolated noise with a median filter."
 
     def run(self, parent, document: ImageDocument) -> ToolResult:
@@ -48,7 +48,7 @@ class MedianTool(ForensicsTool):
 class SobelTool(ForensicsTool):
     tool_id = "sobel"
     title = "Sobel filter"
-    category = "Starter tools"
+    category = "Lab 3"
     description = "Highlight edges with a Sobel filter."
 
     def run(self, parent, document: ImageDocument) -> ToolResult:
@@ -65,7 +65,7 @@ class SobelTool(ForensicsTool):
 class SharpenTool(ForensicsTool):
     tool_id = "sharpen"
     title = "Sharpen"
-    category = "Starter tools"
+    category = "Lab 3"
     description = "Sharpen the image via unsharp masking."
 
     def run(self, parent, document: ImageDocument) -> ToolResult | None:
