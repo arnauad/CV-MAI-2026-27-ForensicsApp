@@ -11,6 +11,7 @@ from .histogram import HistogramTool
 from .image_info import ImageInfoTool
 from .masking import MaskingTool
 from .registry import ToolRegistry
+from .template_matching import CrossCorrelationTool, TemplateMatchingTool
 
 
 def build_tool_registry() -> ToolRegistry:
@@ -30,6 +31,8 @@ def build_tool_registry() -> ToolRegistry:
             CannyTool(),
             EdgeVisualizationTool(),
             SharpenTool(),
+            CrossCorrelationTool(),
+            TemplateMatchingTool(),
         ]
     )
 
