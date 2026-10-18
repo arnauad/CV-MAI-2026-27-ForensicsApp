@@ -11,7 +11,7 @@ from .base import ForensicsTool, ToolResult
 class CrossCorrelationTool(ForensicsTool):
     tool_id = "cross_correlation"
     title = "Cross-correlation"
-    category = "Starter tools"
+    category = "Lab 4"
     description = "Show normalized cross-correlation with a template image."
 
     def run(self, parent, document: ImageDocument) -> ToolResult | None:
@@ -34,7 +34,7 @@ class CrossCorrelationTool(ForensicsTool):
 class TemplateMatchingTool(ForensicsTool):
     tool_id = "template_matching"
     title = "Template matching"
-    category = "Starter tools"
+    category = "Lab 4"
     description = "Mark template matches with an adjustable angle and threshold."
 
     def run(self, parent, document: ImageDocument) -> ToolResult | None:
