@@ -11,6 +11,7 @@ from .histogram import HistogramTool
 from .hog import HogTool
 from .image_info import ImageInfoTool
 from .masking import MaskingTool
+from .person_detection import PersonDetectionTool
 from .registry import ToolRegistry
 from .template_matching import CrossCorrelationTool, TemplateMatchingTool
 
@@ -35,6 +36,7 @@ def build_tool_registry() -> ToolRegistry:
             CrossCorrelationTool(),
             TemplateMatchingTool(),
             HogTool(),
+            PersonDetectionTool(),
         ]
     )
 
