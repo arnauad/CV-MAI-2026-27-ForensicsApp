@@ -5,6 +5,7 @@ from .canny import CannyTool, EdgeVisualizationTool
 from .channel_swap import ChannelSwapTool
 from .contrast_stretch import ContrastStretchTool
 from .convolution import ConvolutionTool
+from .corners import CornerDetectionTool
 from .grayscale import GrayscaleTool
 from .filters import GaussianTool, MedianTool, SobelTool, SharpenTool
 from .histogram import HistogramTool
@@ -37,6 +38,7 @@ def build_tool_registry() -> ToolRegistry:
             TemplateMatchingTool(),
             HogTool(),
             PersonDetectionTool(),
+            CornerDetectionTool(),
         ]
     )
 
