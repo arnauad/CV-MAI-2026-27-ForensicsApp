@@ -11,6 +11,7 @@ from .filters import GaussianTool, MedianTool, SobelTool, SharpenTool
 from .histogram import HistogramTool
 from .hog import HogTool
 from .image_info import ImageInfoTool
+from .keypoints import KeypointDescriptorTool
 from .masking import MaskingTool
 from .person_detection import PersonDetectionTool
 from .registry import ToolRegistry
@@ -39,6 +40,7 @@ def build_tool_registry() -> ToolRegistry:
             HogTool(),
             PersonDetectionTool(),
             CornerDetectionTool(),
+            KeypointDescriptorTool(),
         ]
     )
 
