@@ -11,8 +11,10 @@ from .filters import GaussianTool, MedianTool, SobelTool, SharpenTool
 from .histogram import HistogramTool
 from .hog import HogTool
 from .image_info import ImageInfoTool
+from .image_lookup import ImageLookupTool
 from .keypoints import KeypointDescriptorTool
 from .masking import MaskingTool
+from .matching import ImageMatchingTool
 from .person_detection import PersonDetectionTool
 from .registry import ToolRegistry
 from .template_matching import CrossCorrelationTool, TemplateMatchingTool
@@ -41,6 +43,8 @@ def build_tool_registry() -> ToolRegistry:
             PersonDetectionTool(),
             CornerDetectionTool(),
             KeypointDescriptorTool(),
+            ImageMatchingTool(),
+            ImageLookupTool(),
         ]
     )
 
