@@ -65,16 +65,26 @@ class PersonDetectionTool(ForensicsTool):
         k_euclidean = np.argmin(distances)
         k_dot = np.argmax(products)
 
-        output = document.current.convert("RGB")
-        draw = ImageDraw.Draw(output)
-        for k, color in ((k_euclidean, "red"), (k_dot, "lime")):
+        original = document.current.convert("RGB")
+
+        def boxed(k: int, color: str) -> Image.Image:
             # Same geometry as Rectangle((coord[k][1], coord[k][0]), size_window_y, size_window_x)
+            canvas = original.copy()
             x0, y0 = coord[k][1], coord[k][0]
-            draw.rectangle((x0, y0, x0 + size_window_y - 1, y0 + size_window_x - 1), outline=color, width=3)
+            ImageDraw.Draw(canvas).rectangle(
+                (x0, y0, x0 + size_window_y - 1, y0 + size_window_x - 1), outline=color, width=3
+            )
+            return canvas
+
+        dot_panel = boxed(k_dot, "lime")
+        euclidean_panel = boxed(k_euclidean, "red")
+        output = Image.fromarray(
+            np.hstack([np.asarray(dot_panel), np.asarray(euclidean_panel), np.asarray(original)])
+        )
 
         return ToolResult(
             image=output,
-            message="Red box: min Euclidean distance. Green box: max dot product.",
+            message="Left to right: max dot product (green), min Euclidean distance (red), original image.",
             details={
                 "Operation": "Person Detection",
                 "Windows evaluated": len(coord),
