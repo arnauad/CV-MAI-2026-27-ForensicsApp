@@ -33,6 +33,15 @@ class MatchingTests(unittest.TestCase):
                 offsets = second[0][matches[:, 1]] - first[0][matches[:, 0]]
                 np.testing.assert_allclose(np.median(offsets, axis=0), [7, 9], atol=1)
 
+    def test_ransac_filters_outlier_matches(self):
+        first = extract_features(self.image, "orb", 100)
+        shifted = Image.fromarray(np.roll(np.asarray(self.image), (7, 9), axis=(0, 1)))
+        second = extract_features(shifted, "orb", 100)
+        matches = match_features(first, second, "orb", 0.8)
+        filtered = match_features(first, second, "orb", 0.8, use_ransac=True)
+        self.assertLessEqual(len(filtered), len(matches))
+        self.assertGreater(len(filtered), 0)
+
     def test_no_features_and_too_few_descriptors(self):
         for method in ("orb", "sift"):
             for size in ((1, 1), (64, 64)):
@@ -52,7 +61,7 @@ class MatchingTests(unittest.TestCase):
             path = Path(folder) / "second.png"
             self.image.save(path)
             with patch("forensics_app.tools.matching.filedialog.askopenfilename", return_value=str(path)), \
-                 patch("forensics_app.tools.matching.ask_matching_settings", return_value=("orb", 100, 0.8)):
+                 patch("forensics_app.tools.matching.ask_matching_settings", return_value=("orb", 100, 0.8, False)):
                 result = ImageMatchingTool().run(None, self.document)
         self.assertGreater(result.details["Matches"], 5)
         self.assertEqual(result.image.size, (256, 128))
@@ -73,7 +82,7 @@ class MatchingTests(unittest.TestCase):
             )).save(root / "other.png")
             (root / "broken.png").write_text("not an image")
             with patch("forensics_app.tools.image_lookup.filedialog.askdirectory", return_value=folder), \
-                 patch("forensics_app.tools.image_lookup.ask_matching_settings", return_value=("orb", 100, 0.8)):
+                 patch("forensics_app.tools.image_lookup.ask_matching_settings", return_value=("orb", 100, 0.8, False)):
                 result = ImageLookupTool().run(None, self.document)
             self.assertEqual(Path(result.details["Closest image"]).name, "best.PNG")
             self.assertEqual(result.details["Images checked"], 3)
@@ -88,7 +97,7 @@ class MatchingTests(unittest.TestCase):
                 if blank:
                     Image.new("RGB", (128, 128)).save(Path(folder) / "blank.png")
                 with patch("forensics_app.tools.image_lookup.filedialog.askdirectory", return_value=folder), \
-                     patch("forensics_app.tools.image_lookup.ask_matching_settings", return_value=("orb", 100, 0.8)):
+                     patch("forensics_app.tools.image_lookup.ask_matching_settings", return_value=("orb", 100, 0.8, False)):
                     result = ImageLookupTool().run(None, self.document)
                 self.assertIsNone(result.image)
                 self.assertNotIn("Closest image", result.details)

@@ -1,11 +1,12 @@
 """Set 5.3: match ORB or SIFT descriptors between two images."""
 
 from pathlib import Path
-from tkinter import filedialog, simpledialog
+from tkinter import filedialog, messagebox, simpledialog
 
 import numpy as np
 from PIL import Image, ImageDraw
-from skimage import feature
+from skimage import feature, measure
+from skimage.transform import ProjectiveTransform
 
 from forensics_app.core import ImageDocument
 from .base import ForensicsTool, ToolResult
@@ -32,7 +33,8 @@ def ask_matching_settings(parent, title):
     )
     if ratio is None:
         return None
-    return method, count, ratio
+    use_ransac = messagebox.askyesno(title, "Filter matches with RANSAC?", parent=parent)
+    return method, count, ratio, use_ransac
 
 
 def extract_features(image: Image.Image, method: str, count: int):
@@ -52,16 +54,24 @@ def extract_features(image: Image.Image, method: str, count: int):
     return keypoints, descriptors
 
 
-def match_features(first, second, method: str, ratio: float) -> np.ndarray:
+def match_features(first, second, method: str, ratio: float, use_ransac: bool = False) -> np.ndarray:
     """Keep mutual nearest neighbours that pass the descriptor ratio test."""
     # The ratio test needs two candidate descriptors in the second image.
     if first is None or second is None or len(second[1]) < 2:
         return np.empty((0, 2), dtype=int)
-    return feature.match_descriptors(
+    matches = feature.match_descriptors(
         first[1], second[1],
         metric="hamming" if method == "orb" else "euclidean",
         cross_check=True, max_ratio=ratio,
     )
+    if use_ransac and len(matches) >= 4:
+        src, dst = first[0][matches[:, 0]], second[0][matches[:, 1]]
+        _, inliers = measure.ransac(
+            (src, dst), ProjectiveTransform,
+            min_samples=4, residual_threshold=2, max_trials=1000,
+        )
+        matches = matches[inliers]
+    return matches
 
 
 def draw_matches(first_image, second_image, first_points, second_points, matches):
@@ -98,15 +108,16 @@ class ImageMatchingTool(ForensicsTool):
         settings = ask_matching_settings(parent, self.title)
         if settings is None:
             return None
-        method, count, ratio = settings
+        method, count, ratio, use_ransac = settings
         with Image.open(filename) as image:
             second_image = image.convert("RGB")
         first = extract_features(document.current, method, count)
         second = extract_features(second_image, method, count)
-        matches = match_features(first, second, method, ratio)
+        matches = match_features(first, second, method, ratio, use_ransac)
         details = {
             "Operation": "Image matching", "Second image": Path(filename).name,
             "Method": method.upper(), "Maximum keypoints": count, "Match ratio": ratio,
+            "RANSAC": use_ransac,
             "First keypoints": len(first[0]) if first is not None else 0,
             "Second keypoints": len(second[0]) if second is not None else 0,
             "Matches": len(matches),

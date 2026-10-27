@@ -27,7 +27,7 @@ class ImageLookupTool(ForensicsTool):
         settings = ask_matching_settings(parent, self.title)
         if settings is None:
             return None
-        method, count, ratio = settings
+        method, count, ratio, use_ransac = settings
         query = extract_features(document.current, method, count)
         if query is None:
             return ToolResult(message="No keypoints found in the current image. Try another image or detector.")
@@ -53,7 +53,7 @@ class ImageLookupTool(ForensicsTool):
             if candidate is None:
                 no_features += 1
                 continue
-            matches = match_features(query, candidate, method, ratio)
+            matches = match_features(query, candidate, method, ratio, use_ransac)
             # Keep the first filename in a tie; zero matches is not a result.
             if len(matches) > 0 and (best_matches is None or len(matches) > len(best_matches)):
                 best_path, best_image = path, candidate_image
@@ -61,7 +61,7 @@ class ImageLookupTool(ForensicsTool):
 
         details = {
             "Operation": "Image lookup", "Folder": folder, "Method": method.upper(),
-            "Maximum keypoints": count, "Match ratio": ratio,
+            "Maximum keypoints": count, "Match ratio": ratio, "RANSAC": use_ransac,
             "Images checked": checked, "Unreadable images": unreadable,
             "Images without keypoints": no_features,
         }
