@@ -37,25 +37,6 @@ python -m unittest discover -s tests -v
 python -m compileall forensics_app
 ```
 
-## Lab 5: matching and image lookup
-
-- **Match second image (Set 5.3):** open a second image, choose ORB or SIFT,
-  maximum keypoints, and a match ratio (default 0.8). Matching points appear
-  connected across the two images. Lower ratios reject more ambiguous matches.
-- **Find closest image (Set 5.4):** choose a folder and the same settings.
-  The tool extracts the current image's descriptors once and returns the folder
-  image with the most matches. It checks supported image files directly in that
-  folder, excludes the current source file, and skips unreadable images.
-  Ties use the first filename in sorted order; zero matches produces no result.
-
-Both tools reuse the Set 5.2 descriptor function, with Hamming distance for ORB,
-Euclidean distance for SIFT, mutual nearest-neighbour checks, and a ratio test.
-SIFT uses the helper's defaults: 8 octaves, 3 scales, and sigma 1.6.
-Results reports the match count and settings. The comparison becomes the current
-image, following the existing tool pattern; use **Undo** before another search
-or comparison so it runs on the unmarked input. Results can be saved normally.
-Folder lookup runs synchronously, so large folders can take time.
-
 ## Course roadmap
 
 The shell is intentionally neutral about the algorithms. Possible tool modules  

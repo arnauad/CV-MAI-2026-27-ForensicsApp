@@ -54,7 +54,7 @@ class KeypointDescriptorTool(ForensicsTool):
         )
         if n_keypoints is None:
             return None
-        n_octaves, n_scales, sigma_min = 8, 8, 1.6
+        n_octaves, n_scales, sigma_min = 8, 3, 1.6
         if method == "sift":
             n_octaves = simpledialog.askinteger(
                 "Keypoints & descriptors", "Number of octaves:", initialvalue=8, minvalue=1, parent=parent
@@ -63,7 +63,7 @@ class KeypointDescriptorTool(ForensicsTool):
                 return None
         if method == "sift":
             n_scales = simpledialog.askinteger(
-                "Keypoints & descriptors", "Number of scales:", initialvalue=8, minvalue=1, parent=parent,
+                "Keypoints & descriptors", "Number of scales:", initialvalue=3, minvalue=1, parent=parent,
             )
             if n_scales is None:
                 return None
@@ -89,8 +89,7 @@ class KeypointDescriptorTool(ForensicsTool):
         details = {"Operation": "Keypoints & descriptors", "Method": method, "Number of keypoints": n_keypoints}
         if method == "sift":
             details["Number of octaves"] = n_octaves
-        details["Number of scales"] = n_scales
-        if method == "sift":
+            details["Number of scales"] = n_scales
             details["Sigma min"] = sigma_min
         details.update(
             {
