@@ -187,8 +187,11 @@ class MainWindow:
         if result is None:
             self.status.set(f"Cancelled {tool.title}.")
             return
-        if result.image is not None:
+        if result.image is not None and self.document.is_loaded:
             self.document.apply(result.image)
+        elif result.image is not None:  # tools that do not need an input image
+            self.document.original = result.image.copy()
+            self.document.current = result.image.copy()
         self._show_details(result.details)
         self.status.set(result.message)
         self._refresh()
