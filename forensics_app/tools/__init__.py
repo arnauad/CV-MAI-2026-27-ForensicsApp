@@ -8,7 +8,7 @@ from .convolution import ConvolutionTool
 from .corners import CornerDetectionTool
 from .grayscale import GrayscaleTool
 from .eigenfaces import EigenfacesTool, FaceRecognitionTool
-from .face_detection import FaceDetectionTool
+from .face_detection import FaceDetectionTool, WebcamFaceDetectionTool
 from .filters import GaussianTool, MedianTool, SobelTool, SharpenTool
 from .histogram import HistogramTool
 from .hog import HogTool
@@ -48,6 +48,7 @@ def build_tool_registry() -> ToolRegistry:
             ImageMatchingTool(),
             ImageLookupTool(),
             FaceDetectionTool(),
+            WebcamFaceDetectionTool(),
             EigenfacesTool(),
             FaceRecognitionTool(),
         ]

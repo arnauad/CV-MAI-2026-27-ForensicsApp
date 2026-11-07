@@ -54,7 +54,7 @@ def to_uint8(values: np.ndarray, shape: tuple[int, int]) -> Image.Image:
 
 class EigenfacesTool(ForensicsTool):
     tool_id = "eigenfaces"
-    title = "Eigenfaces (PCA)"
+    title = "Eigenfaces"
     category = "Lab 6"
     description = "Save LFW faces to train/test folders, compute the eigenfaces and save the model."
     requires_image = False
@@ -102,7 +102,7 @@ class EigenfacesTool(ForensicsTool):
             image=gallery,
             message=f"First {n_components} eigenfaces (left to right, top to bottom). Model saved to {model_path.name}.",
             details={
-                "Operation": "Eigenfaces (PCA)",
+                "Operation": "Eigenfaces",
                 "Train images": len(X_train),
                 "People": len(np.unique(names)),
                 "Face size (h x w)": f"{h} x {w}",
@@ -115,7 +115,7 @@ class EigenfacesTool(ForensicsTool):
 
 class FaceRecognitionTool(ForensicsTool):
     tool_id = "face_recognition"
-    title = "Face Recognition (Eigenfaces)"
+    title = "Face Recognition"
     category = "Lab 6"
     description = "Find the closest training faces to the current test face in eigenface space."
 
@@ -169,7 +169,7 @@ class FaceRecognitionTool(ForensicsTool):
             draw.text((x + tile_w / 2, tile_h + gap + 22), line2, fill=color, font=font, anchor="ma")
 
         details: dict[str, object] = {
-            "Operation": "Face Recognition (Eigenfaces)",
+            "Operation": "Face Recognition",
             "Eigenfaces K": len(eigenfaces),
             "Train images": len(coefficients),
             "Prediction": names[closest[0]],

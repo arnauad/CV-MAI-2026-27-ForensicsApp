@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from pathlib import Path
 import tkinter as tk
-from tkinter import simpledialog
+from tkinter import simpledialog, ttk
 import urllib.request
 
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageTk
 
 from forensics_app.core import ImageDocument
 from .base import ForensicsTool, ToolResult
@@ -33,69 +33,147 @@ def load_model() -> Path:
     return MODEL_PATH
 
 
+def ask_thresholds(parent: tk.Misc) -> tuple[float, float] | None:
+    """Ask for the confidence and non-maximum suppression thresholds; ``None`` if cancelled."""
+    score_threshold = simpledialog.askfloat(
+        "Face Detection", "Confidence threshold (0 to 1):",
+        initialvalue=0.6, minvalue=0, maxvalue=1, parent=parent,
+    )
+    if score_threshold is None:
+        return None
+    nms_threshold = simpledialog.askfloat(
+        "Face Detection", "Non-maximum suppression threshold (0 to 1):",
+        initialvalue=0.3, minvalue=0, maxvalue=1, parent=parent,
+    )
+    if nms_threshold is None:
+        return None
+    return score_threshold, nms_threshold
+
+
+def create_detector(width: int, height: int, score_threshold: float, nms_threshold: float):
+    return cv2.FaceDetectorYN.create(
+        str(load_model()),
+        "",
+        (width, height),
+        score_threshold,
+        nms_threshold,
+        5000,  # Maximum number of candidates
+    )
+
+
+def draw_faces(image: np.ndarray, faces) -> tuple[np.ndarray, dict[str, object]]:
+    """Draw boxes and landmarks on a copy of a BGR image; also return per-face details."""
+    result = image.copy()
+    details: dict[str, object] = {}
+    for i, face in enumerate(faces):
+        # Face bounding box
+        x, y, w, h = face[:4].astype(int)
+        confidence = float(face[14])
+        cv2.rectangle(result, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.putText(
+            result, f"Face: {confidence:.2f}", (x, max(20, y - 8)),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2,
+        )
+        details[f"Face {i + 1}"] = f"box ({x}, {y}, {w}, {h}), confidence {confidence:.2f}"
+
+        # Five facial landmarks
+        landmarks = face[4:14].reshape(5, 2).astype(int)
+        for (px, py), name in zip(landmarks, LANDMARK_NAMES):
+            cv2.circle(result, (px, py), 4, (255, 0, 0), -1)
+            details[f"Face {i + 1} - {name}"] = f"({px}, {py})"
+    return result, details
+
+
 class FaceDetectionTool(ForensicsTool):
     tool_id = "face_detection"
-    title = "Face Detection (YuNet)"
+    title = "Face Detection"
     category = "Lab 6"
     description = "Detect faces and facial landmarks with the pretrained YuNet CNN."
 
     def run(self, parent: tk.Misc, document: ImageDocument) -> ToolResult | None:
         assert document.current is not None  # guarded by the main window
-        score_threshold = simpledialog.askfloat(
-            "Face Detection", "Confidence threshold (0 to 1):",
-            initialvalue=0.6, minvalue=0, maxvalue=1, parent=parent,
-        )
-        if score_threshold is None:
-            return None
-        nms_threshold = simpledialog.askfloat(
-            "Face Detection", "Non-maximum suppression threshold (0 to 1):",
-            initialvalue=0.3, minvalue=0, maxvalue=1, parent=parent,
-        )
-        if nms_threshold is None:
+        thresholds = ask_thresholds(parent)
+        if thresholds is None:
             return None
 
         # OpenCV works on BGR arrays
         image = cv2.cvtColor(np.asarray(document.current.convert("RGB")), cv2.COLOR_RGB2BGR)
         height, width = image.shape[:2]
 
-        detector = cv2.FaceDetectorYN.create(
-            str(load_model()),
-            "",
-            (width, height),
-            score_threshold,
-            nms_threshold,
-            5000,  # Maximum number of candidates
-        )
+        detector = create_detector(width, height, *thresholds)
         _, faces = detector.detect(image)
         if faces is None:
             faces = []
-        result = image.copy()
+        result, face_details = draw_faces(image, faces)
         details: dict[str, object] = {
             "Operation": "Face Detection (YuNet)",
             "Image size": f"{width} x {height}",
             "Faces detected": len(faces),
+            **face_details,
         }
-
-        for i, face in enumerate(faces):
-            # Face bounding box
-            x, y, w, h = face[:4].astype(int)
-            confidence = float(face[14])
-            cv2.rectangle(result, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(
-                result, f"Face: {confidence:.2f}", (x, max(20, y - 8)),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2,
-            )
-            details[f"Face {i + 1}"] = f"box ({x}, {y}, {w}, {h}), confidence {confidence:.2f}"
-
-            # Five facial landmarks
-            landmarks = face[4:14].reshape(5, 2).astype(int)
-            for (px, py), name in zip(landmarks, LANDMARK_NAMES):
-                cv2.circle(result, (px, py), 4, (255, 0, 0), -1)
-                details[f"Face {i + 1} - {name}"] = f"({px}, {py})"
 
         message = f"Detected {len(faces)} face(s)." if len(faces) else "No faces detected."
         return ToolResult(
             image=Image.fromarray(cv2.cvtColor(result, cv2.COLOR_BGR2RGB)),
             message=message,
             details=details,
+        )
+
+
+class WebcamFaceDetectionTool(ForensicsTool):
+    tool_id = "webcam_face_detection"
+    title = "Face Detection (Webcam)"
+    category = "Lab 6"
+    description = "Detect faces and facial landmarks in real time from the laptop webcam."
+    requires_image = False
+
+    def run(self, parent: tk.Misc, document: ImageDocument) -> ToolResult | None:
+        thresholds = ask_thresholds(parent)
+        if thresholds is None:
+            return None
+
+        capture = cv2.VideoCapture(0)
+        if not capture.isOpened():
+            raise RuntimeError("Could not open the webcam.")
+        ok, frame = capture.read()
+        if not ok:
+            capture.release()
+            raise RuntimeError("Could not read a frame from the webcam.")
+        height, width = frame.shape[:2]
+        detector = create_detector(width, height, *thresholds)
+
+        # Live view
+        window = tk.Toplevel(parent)
+        window.title("Face Detection (Webcam)")
+        video = ttk.Label(window)
+        video.pack(padx=8, pady=8)
+        ttk.Label(window).pack()
+
+
+        state: dict[str, object] = {"captured": False, "frame": None, "details": {}, "faces": 0}
+
+        def show_frame():
+            ok, frame = capture.read()
+            if ok:
+                frame = cv2.flip(frame, 1)  # Mirror the view
+                _, faces = detector.detect(frame)
+                if faces is None:
+                    faces = []
+                result, face_details = draw_faces(frame, faces)
+                state.update(frame=result, details=face_details, faces=len(faces))
+                photo = ImageTk.PhotoImage(Image.fromarray(cv2.cvtColor(result, cv2.COLOR_BGR2RGB)))
+                video.photo = photo  # Keep a reference so it is not garbage-collected
+                video.configure(image=photo)
+            video.after(15, show_frame)
+
+        show_frame()
+
+        return ToolResult(
+            image=Image.fromarray(cv2.cvtColor(state["frame"], cv2.COLOR_BGR2RGB)),
+            message=f"Captured webcam frame",
+            details={
+                "Operation": "Face Detection (Webcam)",
+                "Image size": f"{width} x {height}",
+                **state["details"],
+            },
         )
