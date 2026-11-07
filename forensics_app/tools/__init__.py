@@ -20,6 +20,7 @@ from .matching import ImageMatchingTool
 from .person_detection import PersonDetectionTool
 from .registry import ToolRegistry
 from .template_matching import CrossCorrelationTool, TemplateMatchingTool
+from .visual_words import CodebookTool, VisualWordClassificationTool, VisualWordHistogramTool
 
 
 def build_tool_registry() -> ToolRegistry:
@@ -51,6 +52,9 @@ def build_tool_registry() -> ToolRegistry:
             WebcamFaceDetectionTool(),
             EigenfacesTool(),
             FaceRecognitionTool(),
+            CodebookTool(),
+            VisualWordHistogramTool(),
+            VisualWordClassificationTool(),
         ]
     )
 
