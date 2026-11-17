@@ -3,6 +3,7 @@
 from .channel_split import ChannelSplitTool
 from .canny import CannyTool, EdgeVisualizationTool
 from .channel_swap import ChannelSwapTool
+from .cnn_classification import CnnClassificationTool, FeatureProjectionTool
 from .contrast_stretch import ContrastStretchTool
 from .convolution import ConvolutionTool
 from .corners import CornerDetectionTool
@@ -55,6 +56,8 @@ def build_tool_registry() -> ToolRegistry:
             CodebookTool(),
             VisualWordHistogramTool(),
             VisualWordClassificationTool(),
+            CnnClassificationTool(),
+            FeatureProjectionTool(),
         ]
     )
 

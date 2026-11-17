@@ -91,7 +91,7 @@ def draw_assignments(image: Image.Image, model: dict, title: str) -> tuple[Image
     words, histogram = assign_words(descriptors, model["kmeans"])
     chart = draw_histogram(histogram, model["patches"], title)
     scale = chart.height / image.height
-    photo = image.convert("L").resize((round(image.width * scale), chart.height))
+    photo = image.convert("L").resize((max(1, round(image.width * scale)), chart.height))
     gap = 40
     canvas = Image.new("RGB", (photo.width + gap + chart.width, chart.height), "white")
     canvas.paste(photo, (0, 0))
@@ -158,7 +158,14 @@ class CodebookTool(ForensicsTool):
             labels.append(path.parent.name)
             images.append(image)
             features.append(sift_features(image, max_features))
+        if len(set(labels)) < 2:
+            raise ValueError("Provide training JPEGs in at least two class folders.")
         all_descriptors = np.vstack([descriptors for _, descriptors in features])
+        if len(all_descriptors) < k:
+            raise ValueError(
+                f"Found {len(all_descriptors)} SIFT descriptors for {k} words. "
+                "Use more textured training images or fewer words."
+            )
 
         # K-means: each cluster centre is a visual word
         kmeans = MiniBatchKMeans(n_clusters=k, batch_size=2048, n_init=3, random_state=42).fit(all_descriptors)
@@ -192,10 +199,12 @@ class CodebookTool(ForensicsTool):
         result = Image.new("RGB", (width, words_y + rows * (tile + label_h + gap)), "white")
         draw = ImageDraw.Draw(result)
         font = ImageFont.load_default(size=11)
-        for n, i in enumerate(np.random.default_rng(42).choice(len(images), N_EXAMPLES, replace=False)):
+        sample_size = min(N_EXAMPLES, len(images))
+        for n, i in enumerate(np.random.default_rng(42).choice(len(images), sample_size, replace=False)):
             scale = min(thumb_w / images[i].width, thumb_h / images[i].height)
             x0, y0 = gap + (n % 5) * (thumb_w + gap), gap + (n // 5) * (thumb_h + gap)
-            result.paste(images[i].resize((round(images[i].width * scale), round(images[i].height * scale))), (x0, y0))
+            size = (max(1, round(images[i].width * scale)), max(1, round(images[i].height * scale)))
+            result.paste(images[i].resize(size), (x0, y0))
             for keypoint in features[i][0]:
                 x, y = x0 + keypoint.pt[0] * scale, y0 + keypoint.pt[1] * scale
                 draw.ellipse((x - 1, y - 1, x + 1, y + 1), fill="red")
