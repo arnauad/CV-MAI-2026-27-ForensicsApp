@@ -22,6 +22,7 @@ from .person_detection import PersonDetectionTool
 from .registry import ToolRegistry
 from .template_matching import CrossCorrelationTool, TemplateMatchingTool
 from .visual_words import CodebookTool, VisualWordClassificationTool, VisualWordHistogramTool
+from .yolo_detection import YoloDetectionTool
 
 
 def build_tool_registry() -> ToolRegistry:
@@ -58,6 +59,7 @@ def build_tool_registry() -> ToolRegistry:
             VisualWordClassificationTool(),
             CnnClassificationTool(),
             FeatureProjectionTool(),
+            YoloDetectionTool(),
         ]
     )
 

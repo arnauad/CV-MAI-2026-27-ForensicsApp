@@ -38,9 +38,11 @@ class CnnClassificationTool(ForensicsTool):
         except ModuleNotFoundError as error:
             raise RuntimeError("Install the dependencies from requirements.txt.") from error
         model = keras.models.load_model(model_path, compile=False)
-        _, height, width, _ = model.input_shape
-        image = document.current.convert("RGB").resize((width, height), Image.Resampling.BILINEAR)
-        probabilities = model.predict(np.asarray(image)[np.newaxis], verbose=0)[0]
+        # Same preprocessing as in the Colab notebook: CIFAR-10 size, then the model's input size, pixels / 255
+        height, width = passport["input_size"]
+        image = document.current.convert("RGB").resize((32, 32), Image.Resampling.BILINEAR)
+        image = image.resize((width, height), Image.Resampling.BILINEAR)
+        probabilities = model.predict(np.asarray(image, dtype=np.float32)[np.newaxis] / 255, verbose=0)[0]
         best = int(probabilities.argmax())
         prediction = passport["class_names"][best]
 
@@ -70,7 +72,9 @@ class FeatureProjectionTool(ForensicsTool):
 
     def run(self, parent: tk.Misc, document: ImageDocument) -> ToolResult | None:
         filename = filedialog.askopenfilename(
-            parent=parent, title="Choose exported test features", filetypes=[("NumPy archive", "*.npz")]
+            parent=parent,
+            title="Choose test features (small_cnn, inception_v3 or resnet50)",
+            filetypes=[("Test features", "*.test_features.npz"), ("NumPy archive", "*.npz")],
         )
         if not filename:
             return None
@@ -78,15 +82,18 @@ class FeatureProjectionTool(ForensicsTool):
             features = saved["features"]
             labels = saved["labels"]
             class_names = saved["class_names"]
-        figure = draw_projections(features, labels, class_names)
+        model_name = Path(filename).name.split(".")[0]
+        figure = draw_projections(features, labels, class_names, title=f"{model_name} features")
         return ToolResult(
             image=figure,
-            message="Projected test features with t-SNE and UMAP.",
-            details={"Samples": len(features), "Feature dimensions": features.shape[1]},
+            message=f"Projected {model_name} test features with t-SNE and UMAP.",
+            details={"Model": model_name, "Samples": len(features), "Feature dimensions": features.shape[1]},
         )
 
 
-def draw_projections(features: np.ndarray, labels: np.ndarray, class_names: np.ndarray) -> Image.Image:
+def draw_projections(
+    features: np.ndarray, labels: np.ndarray, class_names: np.ndarray, title: str = ""
+) -> Image.Image:
     try:
         from matplotlib.figure import Figure
         from umap import UMAP
@@ -98,6 +105,7 @@ def draw_projections(features: np.ndarray, labels: np.ndarray, class_names: np.n
     tsne = TSNE(n_components=2, perplexity=min(30, len(features) - 1), init="random", random_state=42)
     umap = UMAP(n_components=2, n_neighbors=min(15, len(features) - 1), random_state=42, n_jobs=1)
     figure = Figure(figsize=(13, 5), layout="constrained")
+    figure.suptitle(title)
     axes = figure.subplots(1, 2)
     for ax, name, projection in zip(axes, ("t-SNE", "UMAP"), (tsne, umap)):
         coordinates = projection.fit_transform(features)
