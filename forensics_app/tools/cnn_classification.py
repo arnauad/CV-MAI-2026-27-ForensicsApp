@@ -73,7 +73,7 @@ class FeatureProjectionTool(ForensicsTool):
     def run(self, parent: tk.Misc, document: ImageDocument) -> ToolResult | None:
         filename = filedialog.askopenfilename(
             parent=parent,
-            title="Choose test features (small_cnn, inception_v3 or resnet50)",
+            title="Choose test features (strong_cnn, inception_v3 or resnet50)",
             filetypes=[("Test features", "*.test_features.npz"), ("NumPy archive", "*.npz")],
         )
         if not filename:
