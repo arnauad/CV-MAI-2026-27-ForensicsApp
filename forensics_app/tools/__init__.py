@@ -3,6 +3,7 @@
 from .channel_split import ChannelSplitTool
 from .canny import CannyTool, EdgeVisualizationTool
 from .channel_swap import ChannelSwapTool
+from .clip_classification import ClipClassificationTool, WebcamClipClassificationTool
 from .cnn_classification import CnnClassificationTool, FeatureProjectionTool
 from .contrast_stretch import ContrastStretchTool
 from .convolution import ConvolutionTool
@@ -60,6 +61,8 @@ def build_tool_registry() -> ToolRegistry:
             CnnClassificationTool(),
             FeatureProjectionTool(),
             YoloDetectionTool(),
+            ClipClassificationTool(),
+            WebcamClipClassificationTool(),
         ]
     )
 
